@@ -1,3 +1,0 @@
-Ansible config Setup for Kafka
-
-Configurations are available through Ansible Playbooks, and roles in the respective directories.
