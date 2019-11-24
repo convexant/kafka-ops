@@ -1,0 +1,22 @@
+[Unit]
+Description=Apache Kafka Connect Distributed by Confluent
+Wants=basic.target
+After=basic.target network-online.target
+Documentation=https://docs.confluent.io/current/
+
+[Service]
+Type=simple
+User={{ kafka.connect.user }}
+ExecStart=/usr/bin/connect-distributed {{ kafka.connect.config_file }}
+KillMode       = process
+RestartSec     = {{ kafka.connect.systemd.RestartSec }}
+TimeoutStopSec = {{ kafka.connect.systemd.TimeoutStopSec }}
+Type           = simple
+LimitNOFILE    = {{ kafka.connect.systemd.LimitNOFILE }}
+
+{% for key, value in kafka.connect.environment.items() %}
+Environment="{{ key }}={{ value }}"
+{% endfor %}
+
+[Install]
+WantedBy=multi-user.target

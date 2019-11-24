@@ -1,0 +1,5 @@
+- name: Reload systemd
+  systemd: daemon_reload=yes
+
+- name: Restart KSQL Server
+  systemd: name=ksql state=restarted

@@ -1,0 +1,7 @@
+- hosts: monitor
+  name: Setting up Web UIs + Prometheus and Grafana to monitor the platform
+  become: yes
+  roles:
+    - monitor
+    - prometheus
+    #- ansible-kafka-manager

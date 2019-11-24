@@ -1,0 +1,90 @@
+- name: Create Group
+  group: name={{ kafka.connect.group }}
+
+- name: Create User
+  user: name={{ kafka.connect.user }} system=yes group={{ kafka.connect.group }}
+
+- name: Create .aws directory
+  file:
+    path: /home/confluent/.aws
+    state: directory
+    mode: 0750
+    owner: "{{ kafka.connect.user }}"
+    group: "{{ kafka.connect.group }}"
+
+- name: Add AWS Credentials
+  template:
+    src: aws_credentials.j2
+    dest: /home/confluent/.aws/credentials
+    mode: 0600
+    owner: "{{ kafka.connect.user }}"
+    group: "{{ kafka.connect.group }}"
+  notify:
+    - Restart Kafka Connect
+
+- name: Create Log Dir
+  file:
+    path: "{{ kafka.connect.environment.LOG_DIR }}"
+    state: directory
+    mode: 0750
+    owner: "{{ kafka.connect.user }}"
+    group: "{{ kafka.connect.group }}"
+
+- name: Set up Logging Config
+  become: yes
+  copy:
+    src: connect-logging.properties
+    dest: "{{ kafka.connect.logging_config_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Restart Kafka Connect
+
+- name: Create Plugin Dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  with_items: "{{ kafka.connect.plugin_path }}"
+
+- name: Upload Config File
+  template:
+    src: connect.properties.j2
+    dest: "{{ kafka.connect.config_file }}"
+    mode: 0640
+    owner: "{{ kafka.connect.user }}"
+    group: "{{ kafka.connect.group }}"
+  notify:
+    - Restart Kafka Connect
+
+- name: Add additionnal packaged Kafka Connect plugins
+  unarchive:
+    src: "{{ item }}"
+    dest: /usr/share/java
+    mode: 0755
+    owner: root
+    group: root
+  with_items:
+    - jobteaser-kafka-connect-transforms-0.2.5.zip
+    - confluentinc-kafka-connect-salesforce-1.0.0-preview.zip
+  notify:
+    - Restart Kafka Connect
+  tags: plugins
+
+- name: Create systemd Unit
+  template:
+    src: connect-distributed.service.j2
+    dest: "{{ kafka.connect.systemd_file }}"
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart Kafka Connect
+  tags: serv
+
+- name: Start Service
+  systemd: name={{ kafka.connect.service_name }} state=started enabled=yes

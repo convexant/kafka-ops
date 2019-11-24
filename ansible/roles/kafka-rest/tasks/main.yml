@@ -1,0 +1,37 @@
+- name: Create Group
+  group: name={{ kafka.rest.group }}
+
+- name: Create User
+  user: name={{ kafka.rest.user }} system=yes group={{ kafka.rest.group }}
+
+- name: Create Log Dir
+  file:
+    path: "{{ kafka.rest.environment.LOG_DIR }}"
+    state: directory
+    mode: 0750
+    owner: "{{ kafka.rest.user }}"
+    group: "{{ kafka.rest.group }}"
+
+- name: Create systemd Unit
+  template:
+    src: kafka-rest.service.j2
+    dest: "{{ kafka.rest.systemd_file }}"
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart Kafka REST
+
+- name: Upload Config File
+  template:
+    src: kafka-rest.properties.j2
+    dest: "{{ kafka.rest.config_file }}"
+    mode: 0640
+    owner: "{{ kafka.rest.user }}"
+    group: "{{ kafka.rest.group }}"
+  notify:
+    - Restart Kafka REST
+
+- name: Start Service
+  systemd: name={{ kafka.rest.service_name }} state={{ kafka.rest.systemd.state }} enabled={{ kafka.rest.systemd.enabled }}

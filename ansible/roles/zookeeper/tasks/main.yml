@@ -1,0 +1,59 @@
+- name: Create Group
+  group: name={{ zookeeper.group }} state=present
+
+- name: Create User
+  user: name={{ zookeeper.user }} state=present system=yes group={{ zookeeper.group }}
+
+- name: Make ext4 FS on /dev/xvdg
+  filesystem:
+    fstype: ext4
+    dev: /dev/xvdg
+  become: True
+
+- name: Mount /dev/xvdg to zookeeper data dir
+  mount:
+    fstype: ext4
+    src: /dev/xvdg
+    path: "{{  zookeeper.config.dataDir }}"
+    state: mounted
+  become: True
+
+- name: Create Log Dir
+  file: path={{ zookeeper.environment.LOG_DIR }} state=directory mode=0750 owner={{ zookeeper.user }} group={{ zookeeper.group }}
+
+- name: Create Data Dir
+  file: path={{ zookeeper.config.dataDir }} state=directory mode=0750 owner={{ zookeeper.user }} group={{ zookeeper.group }}
+
+- name: Upload myid file
+  template:
+    src: myid.j2
+    dest: "{{ zookeeper.config.dataDir }}/myid"
+    mode: 0555
+    owner: "{{ zookeeper.user }}"
+    group: "{{ zookeeper.group }}"
+  notify:
+    - Restart ZooKeeper
+
+- name: Create systemd Unit
+  template:
+    src: zookeeper.service.j2
+    dest: "{{ zookeeper.systemd_file }}"
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart ZooKeeper
+
+- name: Upload Config File
+  template:
+    src: zookeeper.properties.j2
+    dest: "{{ zookeeper.config_file }}"
+    mode: 0400
+    owner: "{{ zookeeper.user }}"
+    group: "{{ zookeeper.group }}"
+  notify:
+    - Restart ZooKeeper
+
+- name: Start Service
+  systemd: name={{ zookeeper.service_name }} state=started enabled=yes

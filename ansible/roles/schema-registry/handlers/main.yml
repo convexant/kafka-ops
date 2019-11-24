@@ -1,0 +1,5 @@
+- name: Reload systemd
+  systemd: daemon_reload=yes
+
+- name: Restart Schema Registry
+  systemd: name={{ schema.registry.service_name }} state=restarted

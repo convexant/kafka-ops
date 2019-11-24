@@ -1,0 +1,71 @@
+- name: Create Group
+  group: name={{ kafka.broker.group }}
+
+- name: Create User
+  user: name={{ kafka.broker.user }} system=yes group={{ kafka.broker.group }}
+
+- name: Make ext4 FS on /dev/xvdf
+  filesystem:
+    fstype: ext4
+    dev: /dev/xvdf
+  become: True
+
+- name: Mount /dev/xvdf to kafka rootdir
+  mount:
+    fstype: ext4
+    src: /dev/xvdf
+    path: "{{ kafka.broker.rootdir }}"
+    state: mounted
+  become: True
+
+- name: Create kafka dir
+  file:
+    path: "{{ kafka.broker.rootdir }}"
+    state: directory
+    mode: 0750
+    owner: "{{ kafka.broker.user }}"
+    group: "{{ kafka.broker.group }}"
+  become: True
+
+- name: Set JMX_PORT in /etc/environment
+  lineinfile:
+    dest: /etc/environment
+    line: 'JMX_PORT=9999'
+    state: present
+
+- name: Set KAFKA_OPTS in /etc/environment
+  lineinfile:
+    dest: /etc/environment
+    line: 'KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-0.3.1.jar=7071:/etc/jmx_exporter/kafka.yml '
+    state: present
+
+- name: Create Broker Log Dir
+  file: path={{ kafka.broker.environment.LOG_DIR }} state=directory mode=0750 owner={{ kafka.broker.user }} group={{ kafka.broker.group }}
+
+- name: Create Broker Data Dir
+  file: path={{ item }} state=directory mode=0750 owner={{ kafka.broker.user }} group={{ kafka.broker.group }}
+  with_items: "{{ kafka.broker.datadir }}"
+
+- name: Upload Config File
+  template:
+    src: server.properties.j2
+    dest: "{{ kafka.broker.config_file }}"
+    mode: 0640
+    owner: "{{ kafka.broker.user }}"
+    group: "{{ kafka.broker.group }}"
+  notify:
+    - Restart Kafka
+
+- name: Create systemd Unit
+  template:
+    src: broker.service.j2
+    dest: "{{ kafka.broker.systemd_file }}"
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart Kafka
+
+- name: Start Service
+  systemd: name={{ kafka.broker.service_name }} state=started enabled=yes

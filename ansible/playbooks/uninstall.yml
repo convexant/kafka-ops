@@ -1,0 +1,72 @@
+- hosts: connect
+  become: yes
+  tasks:
+    - name: Stop Service
+      service: name=confluent-schema-registry state=stopped
+  ignore_errors: yes
+
+- hosts: connect
+  become: yes
+  tasks:
+    - name: Stop Service
+      service: name=confluent-connect state=stopped
+  ignore_errors: yes
+
+- hosts: connect
+  become: yes
+  tasks:
+    - name: Stop Service
+      service: name=confluent-kafka-rest state=stopped
+  ignore_errors: yes
+
+- hosts: broker
+  become: yes
+  tasks:
+    - name: Stop Kafka Service
+      service: name=confluent-kafka state=stopped
+
+    - name: Remove Kafka Directories
+      file: path={{ item }} state=absent
+      with_items:
+        - /var/lib/kafka/data
+        - /var/log/kafka
+  ignore_errors: yes
+
+- hosts: zookeeper
+  become: yes
+  tasks:
+    - name: Stop Zookeeper Service
+      service: name=confluent-zookeeper state=stopped
+
+    - name: Remove Zookeeper Directories
+      file: path={{ item }} state=absent
+      with_items:
+        - /var/lib/zookeeper
+        - /var/log/zookeeper
+
+
+#
+# - hosts: all
+#   become: yes
+#   tasks:
+#     - name: Uninstall Confluent Packages
+#       apt: name={{ item }} state=absent autoclean=yes autoremove=yes
+#       with_items:
+#         - confluent-platform-oss-2.11
+#
+#     - name: Add APT Key
+#       apt_key:
+#         url: "{{ item }}"
+#         state: present
+#       with_items:
+#         - https://packages.confluent.io/deb/5.0/archive.key
+#
+#     - name: Add APT Repository
+#       apt_repository: repo={{ item }} state=present update_cache=yes
+#       with_items:
+#         - deb [arch=amd64] https://packages.confluent.io/deb/5.0 stable main
+#
+#     - name: Install Confluent Packages
+#       apt: name={{ item }} state=latest autoclean=yes autoremove=yes
+#       with_items:
+#         - confluent-platform-oss-2.11

@@ -1,0 +1,4 @@
+bootstrap.servers={% for host in groups['broker'] %}{% if loop.index > 1 %},{% endif %}{{ host }}:9092{% endfor %}
+
+ksql.command.topic.suffix = commands
+listeners                 = http://0.0.0.0:8787

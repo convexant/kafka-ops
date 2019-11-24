@@ -1,0 +1,5 @@
+groups:
+- name: /etc/prometheus/alert.rules
+  rules:
+  - alert: ExampleAlertAlwaysFiring
+    expr: sum by (job) (up == 1)

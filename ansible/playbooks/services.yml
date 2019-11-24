@@ -1,0 +1,13 @@
+- hosts: registry
+  name: Setting up Schema Registry
+  become: yes
+  roles:
+    - schema-registry
+
+- hosts: connect
+  name: Setting up Kafka Connect workers w/ Rest Proxy
+  become: yes
+  roles:
+    - kafka-connect
+    - kafka-rest
+    # - ksql

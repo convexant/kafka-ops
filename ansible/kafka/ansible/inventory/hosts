@@ -1,0 +1,19 @@
+[zookeeper]
+172.22.64.5
+172.22.128.5
+172.22.192.5
+
+[broker]
+172.22.64.10 broker_id=1
+172.22.128.10 broker_id=2
+172.22.192.10 broker_id=3
+
+[connect]
+c1.kafka.convexant.net
+c2.kafka.convexant.net
+
+[registry]
+c1.kafka.convexant.net
+
+[monitor]
+monitoring.kafka.convexant.net

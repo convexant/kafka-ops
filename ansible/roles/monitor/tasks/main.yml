@@ -1,0 +1,89 @@
+- name: Install docker Pip Package
+  pip: name=docker state=present
+
+- name: Import GPG Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+    state: present
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name: docker-ce
+    state: present
+
+- name: Start Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Start Landoop Kafka Topics UI
+  docker_container:
+    name: kafka-topics-ui
+    image: landoop/kafka-topics-ui
+    state: started
+    restart: yes
+    privileged: yes
+    ports:
+      - "6660:8000"
+    env:
+      PROXY: true
+      KAFKA_REST_PROXY_URL: "http://{{ groups['connect'] | first }}:8082"
+
+- name: Start Landoop Schema Registry UI
+  docker_container:
+    name: schema-registry-ui
+    image: landoop/schema-registry-ui
+    state: started
+    restart: yes
+    privileged: yes
+    ports:
+      - "6661:8000"
+    env:
+      PROXY: true
+      SCHEMAREGISTRY_URL: "http://{{ groups['registry'] | first }}:8081"
+
+- name: Start Landoop Kafka Connect UI
+  docker_container:
+    name: kafka-connect-ui
+    image: landoop/kafka-connect-ui
+    state: started
+    restart: yes
+    privileged: yes
+    ports:
+      - "6662:8000"
+    env:
+      PROXY: true
+      CONNECT_URL: "{% for host in groups['connect'] %}{% if loop.index > 1 %},{% endif %}http://{{ host }}:8083{% endfor %}"
+
+#
+# - name: Start Kafka Manager
+#   docker_container:
+#     name: kafka-manager
+#     image:  sheepkiller/kafka-manager:latest
+#     state: started
+#     restart: yes
+#     privileged: yes
+#     ports:
+#       - "6663:9000"
+#     env:
+#       ZK_HOSTS: "{{ groups['zookeeper'] | first }}:2181"
+
+#ZK_HOSTS: "{% for host in groups['zookeeper'] %}{% if loop.index > 1 %},{% endif %}{{ host }}:2181{% endfor %}"
+
+
+# - name: Start Kafka Web View
+#   docker_container:
+#     name: kafka-web-view
+#     image: sourcelaborg/kafka-webview
+#     state: started
+#     restart: yes
+#     privileged: yes
+#     ports:
+#       - "6664:8080"

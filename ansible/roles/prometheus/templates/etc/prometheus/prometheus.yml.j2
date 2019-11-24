@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 1s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+        - localhost:9090
+
+  - job_name: 'zookeeper'
+    static_configs:
+      - targets:
+    {% for host in groups['zookeeper'] %}
+        - {{ host }}:7070
+    {% endfor %}
+
+  - job_name: 'kafka'
+    static_configs:
+      - targets:
+    {% for host in groups['broker'] %}
+        - {{ host }}:7071
+    {% endfor %}
+
+  - job_name: 'nodes'
+    static_configs:
+      - targets:
+    {% for host in groups['all'] %}
+        - {{ host }}:9100
+    {% endfor %}
+
+  - job_name: 'kafka-connect'
+    static_configs:
+      - targets:
+    {% for host in groups['connect'] %}
+        - {{ host }}:7072
+    {% endfor %}

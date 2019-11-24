@@ -1,0 +1,30 @@
+# demo.aws_ec2.yml
+plugin: aws_ec2
+# boto_profile:
+regions:
+  - eu-west-1
+keyed_groups:
+  - key: image_id
+  - key: instance_type
+    prefix: _type
+  - key: placement.availability_zone
+    prefix: _az
+  - key: subnet_id
+  - key: vpc_id
+  - key: security_groups|json_query("[].group_name")
+    prefix: _sg
+groups:
+  zookeeper: "'kafka' in (tags.Name) and 'zookeeper' in (tags.Name)"
+  broker: "'kafka' in (tags.Name) and 'broker' in (tags.Name)"
+  connect: "'kafka' in (tags.Name) and 'worker' in (tags.Name)"
+  monitor: "'kafka' in (tags.Name) and 'monitor' in (tags.Name)"
+filters:
+  key-name: kafka
+  instance-state-name: running
+hostnames:
+  # - tag:Name
+  # - dns-name
+  - private-ip-address
+compose:
+  ansible_host: private-ip-address
+  broker_id: tag:Name | regex_replace ('.*\.', '')

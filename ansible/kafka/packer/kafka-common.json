@@ -1,0 +1,43 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "aws_ssh_username" : "ubuntu"
+    },
+
+  "builders": [{
+    "type":       "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "ssh_username": "{{user `aws_ssh_username`}}",
+    "region":     "eu-west-1",
+
+    "source_ami_filter": {
+      "filters": {
+        "virtualization-type": "hvm",
+        "name": "ubuntu/images/*ubuntu-bionic-18.04-amd64-server-*",
+        "root-device-type": "ebs"
+      },
+
+      "owners": ["099720109477"],
+      "most_recent": true
+    },
+
+    "instance_type": "t2.micro",
+    "ami_name":      "dev-confluent-common-ami-{{timestamp}}"
+  }],
+
+  "provisioners": [{
+    "type": "file",
+    "source": "files/etc/udev/rules.d/80-ec2-nvme-devices.rules",
+    "destination": "/tmp/80-ec2-nvme-devices.rules"
+  },{
+    "type": "file",
+    "source": "files/sbin/ebsnvme-id",
+    "destination": "/tmp/ebsnvme-id"
+  },{
+    "type": "shell",
+    "environment_vars": ["DEBIAN_FRONTEND=noninteractive"],
+    "script": "setup.sh"
+  }]
+}

@@ -1,0 +1,5 @@
+- hosts: broker
+  name: Setting up Kafka Brokers
+  become: yes
+  roles:
+    - kafka-broker

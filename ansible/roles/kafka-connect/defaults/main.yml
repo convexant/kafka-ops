@@ -1,0 +1,42 @@
+kafka:
+  connect:
+    user: confluent
+    group: confluent
+    config_file: /etc/kafka/connect.properties
+    logging_config_file: /etc/kafka/connect-log4j.properties
+    systemd_file: /lib/systemd/system/confluent-connect.service
+    service_name: confluent-connect
+    plugin_path:
+      - /usr/share/java
+    config:
+      access.control.allow.methods: "GET,POST,PUT,OPTIONS"
+      access.control.allow.origin: "*"
+      config.storage.replication.factor: 2
+      config.storage.topic: connect-configs
+      group.id: connect-cluster
+      internal.key.converter: org.apache.kafka.connect.json.JsonConverter
+      internal.key.converter.schemas.enable: false
+      internal.value.converter: org.apache.kafka.connect.json.JsonConverter
+      internal.value.converter.schemas.enable: false
+      key.converter: io.confluent.connect.avro.AvroConverter
+      producer.max.request.size: 16777216
+      offset.flush.interval.ms: 10000
+      offset.storage.replication.factor: 2
+      offset.storage.topic: connect-offsets
+      status.storage.replication.factor: 2
+      status.storage.topic: connect-status
+      value.converter: io.confluent.connect.avro.AvroConverter
+    environment:
+      CLASSPATH: /usr/share/java/*
+      # CONNECT_PLUGIN_PATH: /usr/share/java
+      KAFKA_HEAP_OPTS: " -Xms16g -Xmx16g "
+      LOG_DIR: /var/log/connect
+      JMX_PORT: 6666
+      KAFKA_JMX_OPTS: " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=6666 "
+      KAFKA_OPTS: " -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-0.3.1.jar=7072:/etc/jmx_exporter/kafka-connect.yml "
+    systemd:
+      enabled: yes
+      state: started
+      LimitNOFILE: 128000
+      TimeoutStopSec: 300
+      RestartSec: 5

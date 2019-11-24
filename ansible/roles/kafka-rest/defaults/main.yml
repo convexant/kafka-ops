@@ -1,0 +1,23 @@
+kafka:
+  rest:
+    user: confluent
+    group: confluent
+    config_file: /etc/kafka/kafka-rest.properties
+    logging_config_file: /etc/kafka/kafka-rest.logging.properties
+    systemd_file: /lib/systemd/system/confluent-kafka-rest.service
+    service_name: confluent-kafka-rest
+    config:
+      access.control.allow.methods: "GET,POST,PUT,OPTIONS"
+      access.control.allow.origin: "*"
+      debug: false
+      kafkastore.topic: _schemas
+      listeners: http://0.0.0.0:8082
+    environment:
+      SCHEMA_REGISTRY_HEAP_OPTS: "-Xmx4g"
+      LOG_DIR: /var/log/kafka-rest
+    systemd:
+      enabled: yes
+      state: started
+      LimitNOFILE: 128000
+      TimeoutStopSec: 300
+      RestartSec: 5

@@ -1,0 +1,28 @@
+zookeeper:
+  user: confluent
+  group: confluent
+  config_file: /etc/kafka/zookeeper.properties
+  logging_config_file: /etc/kafka/zookeeper.logging.properties
+  systemd_file: /lib/systemd/system/confluent-zookeeper.service
+  service_name: confluent-zookeeper
+  config:
+    clientPort: 2181
+    maxClientCnxns: 0
+    initLimit: 5
+    syncLimit: 2
+    autopurge.snapRetainCount: 10
+    autopurge.purgeInterval: 1
+    dataDir: /var/lib/zookeeper
+  environment:
+    KAFKA_HEAP_OPTS: " -Xms2g -Xmx5g"
+    LOG_DIR: /var/log/zookeeper
+    JMX_PORT: 8888
+    ZOOKEEPER_SERVER_OPTS: "$ZOOKEEPER_SERVER_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=8888"
+    EXTRA_ARGS: " -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-0.3.1.jar=7070:/etc/jmx_exporter/zookeeper.yml"
+    SERVER_JVMFLAGS: " -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-0.3.1.jar=7070:/etc/jmx_exporter/zookeeper.yml"
+  systemd:
+    enabled: yes
+    state: started
+    LimitNOFILE: 200000
+    TimeoutStopSec: 300
+    RestartSec: 5

@@ -1,0 +1,4 @@
+kafka:
+  ksql:
+    user: confluent
+    group: confluent

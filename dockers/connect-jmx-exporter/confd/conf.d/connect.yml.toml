@@ -1,0 +1,7 @@
+[template]
+src   = "connect.yml.tmpl"
+dest = "/opt/jmx_prometheus_httpserver/connect.yml"
+keys = [
+ "/jmx/host",
+ "/jmx/port"
+]

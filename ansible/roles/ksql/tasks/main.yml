@@ -1,0 +1,39 @@
+- name: Create Group
+  group: name={{ kafka.ksql.group }}
+
+- name: Create User
+  user: name={{ kafka.ksql.user }} system=yes group={{ kafka.ksql.group }}
+
+- name: Download and unpack KSQL
+  unarchive:
+    src: https://github.com/confluentinc/ksql/releases/download/v0.4/ksql-0.4.tgz
+    dest: /opt
+    owner: root
+    group: root
+    remote_src: yes
+
+- name: Upload Config File
+  template:
+    src: ksqlserver.properties.j2
+    dest: /opt/ksql/config/ksqlserver.properties
+    mode: 0600
+    owner: "{{ kafka.ksql.user }}"
+    group: root
+  notify:
+    - Restart KSQL Server
+  tags:
+    - upload-config
+
+- name: Create systemd Unit
+  template:
+    src: ksql.service.j2
+    dest: /lib/systemd/system/ksql.service
+    mode: 0600
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart KSQL Server
+
+- name: Start Service
+  systemd: name=ksql state=started enabled=yes

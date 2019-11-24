@@ -1,0 +1,32 @@
+- name: Create Group
+  group: name={{ schema.registry.group }}
+
+- name: Create User
+  user: name={{ schema.registry.user }} system=yes group={{ schema.registry.group }}
+
+- name: Create Log Dir
+  file: path={{ schema.registry.environment.LOG_DIR }} state=directory mode=0750 owner={{ schema.registry.user }} group={{ schema.registry.group }}
+
+- name: Create systemd Unit
+  template:
+    src: schema-registry.service.j2
+    dest: "{{ schema.registry.systemd_file }}"
+    mode: 0640
+    owner: root
+    group: root
+  notify:
+    - Reload systemd
+    - Restart Schema Registry
+
+- name: Upload Config File
+  template:
+    src: schema-registry.properties.j2
+    dest: "{{ schema.registry.config_file }}"
+    mode: 0640
+    owner: "{{ schema.registry.user }}"
+    group: "{{ schema.registry.group }}"
+  notify:
+    - Restart Schema Registry
+
+- name: Start Service
+  systemd: name={{ schema.registry.service_name }} state=started enabled=yes

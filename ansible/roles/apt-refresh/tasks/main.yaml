@@ -1,0 +1,10 @@
+# - name: Update apt manually
+#   become: true
+#   shell: apt-get --allow-releaseinfo-change update
+
+- name: Update and upgrade apt packages
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+    cache_valid_time: 86400

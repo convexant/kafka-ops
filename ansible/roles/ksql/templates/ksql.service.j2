@@ -1,0 +1,16 @@
+[Unit]
+Description = KSQL
+Wants       = basic.target
+After       = basic.target network-online.target
+
+[Service]
+Restart           = always
+User              = {{ kafka.ksql.user }}
+ExecStart         = /opt/ksql/bin/ksql-server-start /opt/ksql/config/ksqlserver.properties
+KillMode          = process
+Type              = simple
+LimitNOFILE       = 4096
+WorkingDirectory  = /opt/ksql
+
+[Install]
+WantedBy = multi-user.target

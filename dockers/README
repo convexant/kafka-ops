@@ -1,0 +1,7 @@
+## Set JMX_HOST_IP to your IP Address
+
+Build the stack with "docker-compose up" and you should have
+a kafka stack with Kafka, Zk, Connect Worker, Prometheus, Grafana.
+
+Head to Prometheus at localhost:9090 for Prometheus
+                      localhost:3000 for Grafana
