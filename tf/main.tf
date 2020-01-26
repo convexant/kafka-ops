@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket   = "s3://*******"
-    role_arn = "arn:aws:iam::043244364:role/terraform-operator"
+    role_arn = "arn:aws:iam::043244355:role/terraform-operator"
     key      = "kafka/terraform.tfstate"
     region   = "eu-west-1"
     encrypt  = true
@@ -13,7 +13,7 @@ provider "aws" {
   version = "~> 1.10"
 
   assume_role {
-    role_arn = "arn:aws:iam::043244364:role/terraform-operator"
+    role_arn = "arn:aws:iam::043244355:role/terraform-operator"
   }
 }
 
